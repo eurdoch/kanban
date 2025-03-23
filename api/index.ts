@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import boardRouter from './routes/board.js';
+import taskRouter from './routes/task.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,8 +14,8 @@ app.get('/ping', (req, res) => {
   res.json({ message: 'pong', timestamp: new Date().toISOString() });
 });
 
-// Board routes
-app.use('/board', boardRouter);
+// Task routes
+app.use('/task', taskRouter);
 
 // Start server
 app.listen(PORT, () => {

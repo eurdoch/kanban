@@ -60,4 +60,41 @@ router.post('/', (req, res) => {
     });
 });
 
+// DELETE /task/:id - Delete a task by id
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+  
+  // Validate id
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ error: 'Valid task ID is required' });
+  }
+  
+  console.log(`DELETE /task/${id} endpoint called at:`, new Date().toISOString());
+  
+  // Delete the task from the database
+  const query = `
+    DELETE FROM tasks 
+    WHERE id = $1
+    RETURNING *
+  `;
+  
+  pool.query(query, [id])
+    .then(result => {
+      // Check if any task was deleted
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: `Task with ID ${id} not found` });
+      }
+      
+      // Return success with the deleted task data
+      res.json({
+        message: `Task with ID ${id} deleted successfully`,
+        task: result.rows[0]
+      });
+    })
+    .catch(error => {
+      console.error('Error deleting task:', error);
+      res.status(500).json({ error: 'Failed to delete task' });
+    });
+});
+
 export default router;

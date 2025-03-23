@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import boardRouter from './routes/board.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,6 +13,9 @@ app.use(express.json());
 app.get('/ping', (req, res) => {
   res.json({ message: 'pong', timestamp: new Date().toISOString() });
 });
+
+// Board routes
+app.use('/board', boardRouter);
 
 // Start server
 app.listen(PORT, () => {

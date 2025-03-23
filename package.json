@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && tsc -p api/tsconfig.json",
+    "dev:api": "cd api && yarn dev",
+    "build": "tsc -b && vite build",
+    "build:api": "cd api && yarn build",
+    "start:api": "cd api && yarn start",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "api": "ts-node --esm api/index.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -2,11 +2,10 @@
   "name": "kanban-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "ts-node --esm index.ts",
-    "build": "tsc",
+    "start": "node index.js",
+    "dev": "node --watch index.js",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -16,12 +15,6 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.1",
-    "@types/node": "^22.13.11",
-    "@types/pg": "^8.10.9",
-    "eslint": "^9.21.0",
-    "ts-node": "^10.9.2",
-    "typescript": "~5.7.2"
+    "eslint": "^9.21.0"
   }
 }

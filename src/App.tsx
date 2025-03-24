@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { postTask, Task as NetworkTask, TaskStatus } from './network'
+import { postTask, deleteTask, Task as NetworkTask, TaskStatus } from './network'
 
 interface Task {
   id: string;
@@ -71,6 +71,28 @@ function App() {
     
     setColumns(updatedColumns);
   };
+  
+  const removeTask = async (taskId: string, columnId: string) => {
+    try {
+      // Remove from API
+      await deleteTask(taskId);
+      
+      // Remove from local state
+      const updatedColumns = [...columns];
+      const columnIndex = updatedColumns.findIndex(col => col.id === columnId);
+      
+      if (columnIndex >= 0) {
+        const taskIndex = updatedColumns[columnIndex].tasks.findIndex(task => task.id === taskId);
+        if (taskIndex >= 0) {
+          updatedColumns[columnIndex].tasks.splice(taskIndex, 1);
+          setColumns(updatedColumns);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      alert('Failed to delete task. Please try again.');
+    }
+  };
 
   return (
     <div className="kanban-container">
@@ -98,7 +120,16 @@ function App() {
             <div className="task-list">
               {column.tasks.map(task => (
                 <div key={task.id} className="task-card">
-                  <h3>{task.title}</h3>
+                  <div className="task-header">
+                    <h3>{task.title}</h3>
+                    <button 
+                      className="delete-button"
+                      onClick={() => removeTask(task.id, column.id)}
+                      title="Delete task"
+                    >
+                      ×
+                    </button>
+                  </div>
                   <p>{task.description}</p>
                   <div className="task-actions">
                     {column.id !== 'todo' && (
@@ -236,9 +267,41 @@ function App() {
           box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
         }
         
+        .task-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 10px;
+        }
+        
         .task-card h3 {
-          margin: 0 0 10px;
+          margin: 0;
           color: #444;
+          flex: 1;
+        }
+        
+        .delete-button {
+          background: none;
+          border: none;
+          color: #999;
+          font-size: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 24px;
+          height: 24px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          margin-left: 8px;
+          transition: all 0.2s;
+          line-height: 1;
+        }
+        
+        .delete-button:hover {
+          background-color: #ff4d4f;
+          color: white;
         }
         
         .task-card p {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { postTask, Task as NetworkTask, TaskStatus } from './network'
 
 interface Task {
   id: string;
@@ -23,21 +24,38 @@ function App() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
 
-  const addTask = () => {
+  const addTask = async () => {
     if (newTaskTitle.trim() === '') return;
     
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      description: newTaskDescription
-    };
-    
-    const updatedColumns = [...columns];
-    updatedColumns[0].tasks.push(newTask);
-    
-    setColumns(updatedColumns);
-    setNewTaskTitle('');
-    setNewTaskDescription('');
+    try {
+      // Create task data to send to API
+      const taskData: NetworkTask = {
+        title: newTaskTitle,
+        description: newTaskDescription,
+        status: TaskStatus.TODO
+      };
+      
+      // Post to API and get response with ID
+      const createdTask = await postTask(taskData);
+      
+      // Create local task with the returned data
+      const newTask: Task = {
+        id: String(createdTask.id),
+        title: createdTask.title,
+        description: createdTask.description || ''
+      };
+      
+      // Update UI
+      const updatedColumns = [...columns];
+      updatedColumns[0].tasks.push(newTask);
+      
+      setColumns(updatedColumns);
+      setNewTaskTitle('');
+      setNewTaskDescription('');
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      alert('Failed to create task. Please try again.');
+    }
   };
 
   const moveTask = (taskId: string, sourceColumnId: string, destinationColumnId: string) => {
@@ -70,7 +88,7 @@ function App() {
           value={newTaskDescription}
           onChange={(e) => setNewTaskDescription(e.target.value)}
         />
-        <button onClick={addTask}>Add Task</button>
+        <button onClick={() => addTask()}>Add Task</button>
       </div>
       
       <div className="kanban-board">

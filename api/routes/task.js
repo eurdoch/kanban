@@ -3,12 +3,6 @@ import { pool } from '../db/index.js';
 
 const router = express.Router();
 
-// Debug middleware - log all requests
-router.use((req, res, next) => {
-  console.log(`[DEBUG] ${req.method} ${req.originalUrl} (params: ${JSON.stringify(req.params)})`);
-  next();
-});
-
 // GET /task - Get all tasks
 router.get('/', (req, res) => {
   console.log('GET /task endpoint called at:', new Date().toISOString());

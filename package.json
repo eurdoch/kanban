@@ -8,6 +8,7 @@
     "dev:api": "cd api && yarn dev",
     "build": "tsc -b && vite build",
     "start:api": "cd api && yarn start",
+    "start:manager": "cd manager && yarn start",
     "lint": "eslint .",
     "preview": "vite preview"
   },

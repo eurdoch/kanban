@@ -91,9 +91,9 @@ router.delete('/:id', (req, res) => {
         return res.status(404).json({ error: `Task with ID ${id} not found` });
       }
       
-      // Return success with the deleted task data
+      // Return success with deleted boolean and the deleted task data
       res.json({
-        message: `Task with ID ${id} deleted successfully`,
+        deleted: true,
         task: result.rows[0]
       });
     })

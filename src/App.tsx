@@ -28,14 +28,25 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Fetch tasks on component mount
+  // Fetch tasks on component mount and set up refresh interval
   useEffect(() => {
-    fetchTasks();
+    // Initial fetch with loading state
+    fetchTasks(true);
+    
+    // Set up interval for automatic refresh every second (without loading state)
+    const intervalId = setInterval(() => {
+      fetchTasks(false);
+    }, 1000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
   
   // Function to fetch all tasks and organize by status
-  const fetchTasks = async () => {
-    setIsLoading(true);
+  const fetchTasks = async (showLoadingState = false) => {
+    if (showLoadingState) {
+      setIsLoading(true);
+    }
     setError(null);
     
     try {
@@ -64,9 +75,11 @@ function App() {
       setColumns(updatedColumns);
     } catch (err) {
       console.error('Failed to fetch tasks:', err);
-      setError('Failed to load tasks. Please refresh to try again.');
+      setError('Connection error. Auto-refresh is active and will continue trying.');
     } finally {
-      setIsLoading(false);
+      if (showLoadingState) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -137,7 +150,7 @@ function App() {
       alert('Failed to update task status. Please try again.');
       
       // Refresh tasks to ensure UI is in sync with backend
-      fetchTasks();
+      fetchTasks(true);
     }
   };
   
@@ -180,9 +193,6 @@ function App() {
           onChange={(e) => setNewTaskDescription(e.target.value)}
         />
         <button onClick={() => addTask()}>Add Task</button>
-        <button onClick={() => fetchTasks()} disabled={isLoading}>
-          {isLoading ? 'Refreshing...' : 'Refresh Tasks'}
-        </button>
       </div>
       
       {error && <div className="error-message">{error}</div>}
@@ -418,14 +428,6 @@ function App() {
         .task-form button:disabled {
           background-color: #cccccc;
           cursor: not-allowed;
-        }
-        
-        .task-form button:last-child {
-          background-color: #5f9ea0;
-        }
-        
-        .task-form button:last-child:hover:not(:disabled) {
-          background-color: #4f8a8c;
         }
         
         @media (max-width: 900px) {

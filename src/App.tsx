@@ -1,28 +1,74 @@
-import { useState } from 'react'
-import { postTask, deleteTask, Task as NetworkTask, TaskStatus } from './network'
+import { useState, useEffect } from 'react'
+import { getTasks, postTask, deleteTask, updateTask, Task as NetworkTask, TaskStatus } from './network'
 
 interface Task {
   id: string;
   title: string;
   description: string;
+  status: TaskStatus;
 }
 
 interface Column {
   id: string;
   title: string;
   tasks: Task[];
+  status: TaskStatus;
 }
 
 function App() {
   const [columns, setColumns] = useState<Column[]>([
-    { id: 'todo', title: 'To Do', tasks: [] },
-    { id: 'inprogress', title: 'In Progress', tasks: [] },
-    { id: 'completed', title: 'Completed', tasks: [] },
-    { id: 'staged', title: 'Staged', tasks: [] }
+    { id: 'todo', title: 'To Do', tasks: [], status: TaskStatus.TODO },
+    { id: 'inprogress', title: 'In Progress', tasks: [], status: TaskStatus.IN_PROGRESS },
+    { id: 'completed', title: 'Completed', tasks: [], status: TaskStatus.COMPLETED },
+    { id: 'staged', title: 'Staged', tasks: [], status: TaskStatus.STAGED }
   ]);
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch tasks on component mount
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+  
+  // Function to fetch all tasks and organize by status
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const tasks = await getTasks();
+      
+      // Create a new columns array with empty tasks
+      const updatedColumns = columns.map(column => ({
+        ...column,
+        tasks: []
+      }));
+      
+      // Distribute tasks to appropriate columns based on status
+      tasks.forEach(task => {
+        const columnIndex = updatedColumns.findIndex(col => col.status === task.status);
+        
+        if (columnIndex !== -1) {
+          updatedColumns[columnIndex].tasks.push({
+            id: String(task.id),
+            title: task.title,
+            description: task.description || '',
+            status: task.status as TaskStatus
+          });
+        }
+      });
+      
+      setColumns(updatedColumns);
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
+      setError('Failed to load tasks. Please refresh to try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addTask = async () => {
     if (newTaskTitle.trim() === '') return;
@@ -42,12 +88,14 @@ function App() {
       const newTask: Task = {
         id: String(createdTask.id),
         title: createdTask.title,
-        description: createdTask.description || ''
+        description: createdTask.description || '',
+        status: createdTask.status as TaskStatus
       };
       
       // Update UI
       const updatedColumns = [...columns];
-      updatedColumns[0].tasks.push(newTask);
+      const todoColumnIndex = updatedColumns.findIndex(col => col.status === TaskStatus.TODO);
+      updatedColumns[todoColumnIndex].tasks.push(newTask);
       
       setColumns(updatedColumns);
       setNewTaskTitle('');
@@ -58,18 +106,39 @@ function App() {
     }
   };
 
-  const moveTask = (taskId: string, sourceColumnId: string, destinationColumnId: string) => {
-    const updatedColumns = [...columns];
-    
-    const sourceColumnIndex = updatedColumns.findIndex(col => col.id === sourceColumnId);
-    const destinationColumnIndex = updatedColumns.findIndex(col => col.id === destinationColumnId);
-    
-    const taskIndex = updatedColumns[sourceColumnIndex].tasks.findIndex(task => task.id === taskId);
-    const [task] = updatedColumns[sourceColumnIndex].tasks.splice(taskIndex, 1);
-    
-    updatedColumns[destinationColumnIndex].tasks.push(task);
-    
-    setColumns(updatedColumns);
+  const moveTask = async (taskId: string, sourceColumnId: string, destinationColumnId: string) => {
+    try {
+      const updatedColumns = [...columns];
+      
+      const sourceColumnIndex = updatedColumns.findIndex(col => col.id === sourceColumnId);
+      const destinationColumnIndex = updatedColumns.findIndex(col => col.id === destinationColumnId);
+      const destinationStatus = updatedColumns[destinationColumnIndex].status;
+      
+      const taskIndex = updatedColumns[sourceColumnIndex].tasks.findIndex(task => task.id === taskId);
+      const task = updatedColumns[sourceColumnIndex].tasks[taskIndex];
+      
+      // Update the task in the API
+      const updatedTask = await updateTask(taskId, {
+        status: destinationStatus
+      });
+      
+      // Remove task from source column
+      updatedColumns[sourceColumnIndex].tasks.splice(taskIndex, 1);
+      
+      // Add updated task to destination column
+      updatedColumns[destinationColumnIndex].tasks.push({
+        ...task,
+        status: updatedTask.status as TaskStatus
+      });
+      
+      setColumns(updatedColumns);
+    } catch (error) {
+      console.error('Failed to move task:', error);
+      alert('Failed to update task status. Please try again.');
+      
+      // Refresh tasks to ensure UI is in sync with backend
+      fetchTasks();
+    }
   };
   
   const removeTask = async (taskId: string, columnId: string) => {
@@ -111,7 +180,12 @@ function App() {
           onChange={(e) => setNewTaskDescription(e.target.value)}
         />
         <button onClick={() => addTask()}>Add Task</button>
+        <button onClick={() => fetchTasks()} disabled={isLoading}>
+          {isLoading ? 'Refreshing...' : 'Refresh Tasks'}
+        </button>
       </div>
+      
+      {error && <div className="error-message">{error}</div>}
       
       <div className="kanban-board">
         {columns.map(column => (
@@ -329,6 +403,29 @@ function App() {
         
         .task-actions button:hover {
           background-color: #dee2e6;
+        }
+        
+        .error-message {
+          background-color: #ffebee;
+          color: #d32f2f;
+          padding: 12px;
+          border-radius: 4px;
+          margin-bottom: 15px;
+          text-align: center;
+          border-left: 4px solid #d32f2f;
+        }
+        
+        .task-form button:disabled {
+          background-color: #cccccc;
+          cursor: not-allowed;
+        }
+        
+        .task-form button:last-child {
+          background-color: #5f9ea0;
+        }
+        
+        .task-form button:last-child:hover:not(:disabled) {
+          background-color: #4f8a8c;
         }
         
         @media (max-width: 900px) {

@@ -71,3 +71,26 @@ export async function deleteTask(id: number | string): Promise<{ deleted: boolea
 
   return response.json();
 }
+
+/**
+ * Updates an existing task via the API
+ * @param id The ID of the task to update
+ * @param updates Partial task data with fields to update
+ * @returns The updated task
+ */
+export async function updateTask(id: number | string, updates: Partial<Task>): Promise<Task> {
+  const response = await fetch(`${API_BASE_URL}/task/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to update task');
+  }
+
+  return response.json();
+}

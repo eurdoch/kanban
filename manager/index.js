@@ -64,11 +64,12 @@ async function processTask(task) {
     
     // Spawn a new process to handle the task
     // This is a simple example - in a real app, you might run a more complex script
-    const childProcess = spawn('node', ['-e', `
-      console.log("Worker process started for task ${task.id}");
-      console.log("Task details:", ${JSON.stringify(JSON.stringify(task))});
-      console.log("Worker process for task ${task.id} completed");
-    `]);
+    //const childProcess = spawn('node', ['-e', `
+    //  console.log("Worker process started for task ${task.id}");
+    //  console.log("Task details:", ${JSON.stringify(JSON.stringify(task))});
+    //  console.log("Worker process for task ${task.id} completed");
+    //`]);
+    const childProcess = spawn('claude', ['-p', `${task.title}: ${task.description}`]);
     
     // Log output from the child process
     childProcess.stdout.on('data', (data) => {

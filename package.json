@@ -4,7 +4,8 @@
   "description": "A CLI tool for running Kanban board servers",
   "type": "module",
   "bin": {
-    "kanban-cli": "./bin/cli.js"
+    "kanban-cli": "./bin/cli.js",
+    "kanban": "./bin/cli.js"
   },
   "scripts": {
     "dev": "vite",

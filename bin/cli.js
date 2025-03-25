@@ -12,59 +12,65 @@ const rootDir = path.resolve(__dirname, '..');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const command = args[0] || 'servers'; // Default to 'servers' if no command is provided
+const command = args[0] || 'serve'; // Default to 'serve' if no command is provided
 
-// Map of available commands and their corresponding script in package.json
-const commands = {
-  'servers': 'servers',
-  'start': 'start:servers',
-  'stop': 'stop:servers',
-  'logs': 'logs',
-  'restart': 'restart:servers',
-  'status': 'servers:status',
-  'delete': 'delete:servers',
-  'help': 'help'
-};
-
-// Function to run a yarn script
-function runScript(script) {
-  console.log(`Running command: ${script}`);
+// Function to run the serve command
+function serveCommand() {
+  console.log('Starting Kanban API and Manager servers...');
   
-  // Get the package.json content to extract the actual command
-  const packageJsonPath = path.join(rootDir, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const configPath = path.join(rootDir, 'ecosystem.config.cjs');
   
-  let cmd;
-  if (script === 'help') {
-    displayHelp();
-    return;
-  } else {
-    cmd = packageJson.scripts[script];
-    if (!cmd) {
-      console.error(`Error: Script "${script}" not found in package.json`);
-      displayHelp();
-      process.exit(1);
-    }
+  // Check if config file exists
+  if (!fs.existsSync(configPath)) {
+    console.error(`Error: PM2 configuration file not found at ${configPath}`);
+    process.exit(1);
   }
   
-  // Run the command
-  const parts = cmd.split(' ');
-  const proc = spawn(parts[0], parts.slice(1), {
+  // First, delete any existing instances to avoid conflicts
+  const cleanupProc = spawn('pm2', ['delete', 'all'], {
     cwd: rootDir,
-    stdio: 'inherit',
+    stdio: 'ignore',
     shell: true
   });
   
-  proc.on('close', code => {
-    if (code !== 0) {
-      console.error(`Command exited with code ${code}`);
-      process.exit(code);
-    }
+  cleanupProc.on('close', () => {
+    // Start the servers using PM2
+    const startProc = spawn('pm2', ['start', configPath], {
+      cwd: rootDir,
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    startProc.on('close', code => {
+      if (code !== 0) {
+        console.error(`Failed to start servers with exit code ${code}`);
+        process.exit(code);
+      }
+      
+      console.log('Servers started successfully. Showing logs...');
+      
+      // Show logs after starting
+      const logsProc = spawn('pm2', ['logs'], {
+        cwd: rootDir,
+        stdio: 'inherit',
+        shell: true
+      });
+      
+      logsProc.on('error', (error) => {
+        console.error(`Error displaying logs: ${error.message}`);
+      });
+    });
+    
+    startProc.on('error', (error) => {
+      console.error(`Error starting servers: ${error.message}`);
+      process.exit(1);
+    });
   });
   
-  proc.on('error', (error) => {
-    console.error(`Error executing command: ${error.message}`);
-    process.exit(1);
+  cleanupProc.on('error', (error) => {
+    console.error(`Error cleaning up previous instances: ${error.message}`);
+    // Continue anyway
+    serveCommand();
   });
 }
 
@@ -77,24 +83,21 @@ Usage:
   kanban-cli [command]
 
 Available Commands:
-  servers    Start both API and manager servers and display logs
-  start      Start servers without showing logs
-  stop       Stop all running servers
-  logs       View logs from all servers
-  restart    Restart all servers
-  status     Check server status
-  delete     Remove servers from PM2
+  serve      Start both API and manager servers (default command)
   help       Display this help message
 
 Examples:
-  kanban-cli servers
-  kanban-cli logs
+  kanban-cli
+  kanban-cli serve
+  kanban-cli help
   `);
 }
 
 // Execute the requested command
-if (commands[command]) {
-  runScript(commands[command]);
+if (command === 'serve') {
+  serveCommand();
+} else if (command === 'help') {
+  displayHelp();
 } else {
   console.error(`Unknown command: ${command}`);
   displayHelp();

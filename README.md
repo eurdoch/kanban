@@ -33,14 +33,10 @@ kanban-cli [command]
 
 ### Available Commands
 
-- `kanban-cli servers` - Start both API and manager servers and display logs
-- `kanban-cli start` - Start servers without showing logs
-- `kanban-cli stop` - Stop all running servers
-- `kanban-cli logs` - View logs from all servers
-- `kanban-cli restart` - Restart all servers
-- `kanban-cli status` - Check server status
-- `kanban-cli delete` - Remove servers from PM2
+- `kanban-cli serve` - Start both API and manager servers (default command)
 - `kanban-cli help` - Display help information
+
+You can also simply run `kanban-cli` without any command to start the servers.
 
 ### Using in package.json Scripts
 
@@ -49,8 +45,7 @@ You can also use the CLI in your own project's package.json scripts:
 ```json
 {
   "scripts": {
-    "kanban": "kanban-cli servers",
-    "kanban:logs": "kanban-cli logs"
+    "kanban": "kanban-cli serve"
   }
 }
 ```

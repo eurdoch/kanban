@@ -8,10 +8,22 @@ const POLL_INTERVAL_MS = 1000; // 1 second
 async function pollTasks() {
   try {
     const response = await axios.get(`${API_URL}/task`);
-    console.log('Tasks from API:', response.data);
-    return response.data;
+    
+    // Filter tasks with status 'TODO'
+    const todoTasks = response.data.filter(task => task.status === 'TODO');
+    
+    if (todoTasks.length > 0) {
+      console.log('TODO Tasks:');
+      todoTasks.forEach(task => {
+        console.log(`- ID: ${task.id}, Title: ${task.title}, Created: ${new Date(task.createdAt).toLocaleString()}`);
+      });
+    } else {
+      console.log('No TODO tasks found');
+    }
+    
+    return todoTasks;
   } catch (error) {
-    console.error('Error poling tasks:', error.message);
+    console.error('Error polling tasks:', error.message);
     if (error.response) {
       console.error('Response data:', error.response.data);
       console.error('Response status:', error.response.status);

@@ -4,10 +4,10 @@ import { pool } from '../db/index.js';
 const router = express.Router();
 
 // Valid task statuses
-const VALID_STATUSES = ['TODO', 'IN_PROGRESS', 'DONE'];
+const VALID_STATUSES = ['TODO', 'IN_PROGRESS', 'COMPLETED', 'STAGED'];
 
 // GET /task - Get all tasks
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
   console.log('GET /task endpoint called at:', new Date().toISOString());
   
   // Query all tasks from the database, ordered by id

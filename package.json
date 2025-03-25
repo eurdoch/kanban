@@ -9,12 +9,20 @@
     "build": "tsc -b && vite build",
     "start:api": "cd api && yarn start",
     "start:manager": "cd manager && yarn start",
+    "start:servers": "pm2 start ecosystem.config.js",
+    "stop:servers": "pm2 stop all",
+    "logs": "pm2 logs",
+    "restart:servers": "pm2 restart all",
+    "delete:servers": "pm2 delete all",
+    "servers:status": "pm2 status",
+    "servers": "pm2 start ecosystem.config.js && pm2 logs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "pm2": "^6.0.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

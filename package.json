@@ -1,8 +1,11 @@
 {
-  "name": "kanban",
-  "private": true,
-  "version": "0.0.1",
+  "name": "kanban-board-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool for running Kanban board servers",
   "type": "module",
+  "bin": {
+    "kanban-cli": "./bin/cli.js"
+  },
   "scripts": {
     "dev": "vite",
     "dev:api": "cd api && yarn dev",
@@ -43,5 +46,24 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
+  },
+  "keywords": [
+    "kanban",
+    "cli",
+    "task-management",
+    "pm2",
+    "react"
+  ],
+  "author": "Kanban Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/kanban-board-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/kanban-board-cli/issues"
   }
 }

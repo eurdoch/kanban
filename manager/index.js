@@ -2,6 +2,7 @@ import axios from 'axios';
 import { spawn } from 'child_process';
 
 // Configuration
+// TODO move API_URL to config file so that it can be set at startup
 const API_URL = 'http://localhost:3001'; // Adjust this to your API's URL
 const POLL_INTERVAL_MS = 5000; // 5 seconds
 

@@ -1,4 +1,5 @@
-export default {
+// PM2 Configuration File (CommonJS format)
+module.exports = {
   apps: [
     {
       name: 'api',

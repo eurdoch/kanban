@@ -25,7 +25,7 @@ function App() {
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Fetch tasks on component mount and set up refresh interval
@@ -55,7 +55,7 @@ function App() {
       // Create a new columns array with empty tasks
       const updatedColumns = columns.map(column => ({
         ...column,
-        tasks: []
+        tasks: [] as Task[]
       }));
       
       // Distribute tasks to appropriate columns based on status

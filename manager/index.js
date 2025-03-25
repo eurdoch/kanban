@@ -69,7 +69,7 @@ async function processTask(task) {
     //  console.log("Task details:", ${JSON.stringify(JSON.stringify(task))});
     //  console.log("Worker process for task ${task.id} completed");
     //`]);
-    const childProcess = spawn('claude', ['-p', `${task.title}: ${task.description}`]);
+    const childProcess = spawn('claude', ['-p', `"${task.title}: ${task.description}"`, '--allowedTools', '"Bash(git:*),Edit"']);
     
     // Log output from the child process
     childProcess.stdout.on('data', (data) => {

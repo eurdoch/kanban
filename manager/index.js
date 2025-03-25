@@ -1,5 +1,5 @@
-const axios = require('axios');
-const { spawn } = require('child_process');
+import axios from 'axios';
+import { spawn } from 'child_process';
 
 // Configuration
 const API_URL = 'http://localhost:3001'; // Adjust this to your API's URL

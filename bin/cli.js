@@ -14,6 +14,9 @@ const rootDir = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const command = args[0] || 'serve'; // Default to 'serve' if no command is provided
 
+// PM2 process names that our app uses (defined in ecosystem.config.cjs)
+const PM2_PROCESS_NAMES = ['api', 'manager'];
+
 // Function to run the serve command
 function serveCommand() {
   console.log('Starting Kanban API and Manager servers...');
@@ -74,6 +77,53 @@ function serveCommand() {
   });
 }
 
+// Function to attach to running servers
+function attachCommand() {
+  console.log('Attaching to Kanban servers...');
+  
+  // Check if servers are running using PM2 list
+  const checkProc = spawn('pm2', ['list'], {
+    cwd: rootDir,
+    stdio: ['pipe', 'pipe', 'inherit'], // We need to capture stdout to check if processes exist
+    shell: true
+  });
+  
+  let output = '';
+  checkProc.stdout.on('data', (data) => {
+    output += data.toString();
+  });
+  
+  checkProc.on('close', (code) => {
+    // Check if our processes are running
+    const processesRunning = PM2_PROCESS_NAMES.some(name => output.includes(name));
+    
+    if (!processesRunning) {
+      console.error('Error: Kanban servers are not running. Please start them first with:');
+      console.error('  kanban-cli serve');
+      process.exit(1);
+    }
+    
+    console.log('Servers are running. Attaching to logs...');
+    
+    // Attach to logs
+    const logsProc = spawn('pm2', ['logs'], {
+      cwd: rootDir,
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    logsProc.on('error', (error) => {
+      console.error(`Error displaying logs: ${error.message}`);
+      process.exit(1);
+    });
+  });
+  
+  checkProc.on('error', (error) => {
+    console.error(`Error checking server status: ${error.message}`);
+    process.exit(1);
+  });
+}
+
 // Function to display help information
 function displayHelp() {
   console.log(`
@@ -84,18 +134,22 @@ Usage:
 
 Available Commands:
   serve      Start both API and manager servers (default command)
+  attach     Attach to running servers to view logs
   help       Display this help message
 
 Examples:
-  kanban-cli
-  kanban-cli serve
-  kanban-cli help
+  kanban-cli                  # Start servers
+  kanban-cli serve            # Start servers
+  kanban-cli attach           # View logs of running servers
+  kanban-cli help             # Display help
   `);
 }
 
 // Execute the requested command
 if (command === 'serve') {
   serveCommand();
+} else if (command === 'attach') {
+  attachCommand();
 } else if (command === 'help') {
   displayHelp();
 } else {

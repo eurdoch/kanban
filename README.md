@@ -34,6 +34,7 @@ kanban-cli [command]
 ### Available Commands
 
 - `kanban-cli serve` - Start both API and manager servers (default command)
+- `kanban-cli attach` - Attach to running servers to view logs
 - `kanban-cli help` - Display help information
 
 You can also simply run `kanban-cli` without any command to start the servers.
@@ -45,7 +46,8 @@ You can also use the CLI in your own project's package.json scripts:
 ```json
 {
   "scripts": {
-    "kanban": "kanban-cli serve"
+    "kanban": "kanban-cli serve",
+    "kanban:logs": "kanban-cli attach"
   }
 }
 ```

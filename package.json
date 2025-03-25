@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:api": "cd api && yarn dev",
     "build": "tsc -b && vite build",
+    "build:all": "yarn build && yarn start:api",
     "start:api": "cd api && yarn start",
     "start:manager": "cd manager && yarn start",
     "start:servers": "pm2 start ecosystem.config.cjs",
